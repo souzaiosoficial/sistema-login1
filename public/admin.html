@@ -408,17 +408,31 @@ async function criarUsuario() {
       method: 'POST',
       headers: {
         'Content-Type':'application/json',
-        'x-admin-token':adminToken
+        'x-admin-token': adminToken
       },
-      body: JSON.stringify({username, password})
+      body: JSON.stringify({
+        usuario: username,
+        senha: password,
+        tempo: 1440
+      })
     });
 
-    const data = await res.json().catch(() => null);
+    const data = await res.json();
 
-    if (!data) {
-      mostrarMsgCriar('Erro no servidor', 'erro');
-      return;
+    if (data.sucesso) {
+      document.getElementById('novo-user').value = '';
+      document.getElementById('novo-pass').value = '';
+
+      mostrarMsgCriar('Acesso criado com sucesso!', 'ok');
+      carregarUsuarios();
+    } else {
+      mostrarMsgCriar(data.erro || 'Erro ao criar.', 'erro');
     }
+
+  } catch(e) {
+    mostrarMsgCriar('Erro de conexão.', 'erro');
+  }
+}
 
     if (data.sucesso) {
       document.getElementById('novo-user').value = '';
