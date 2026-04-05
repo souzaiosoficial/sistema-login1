@@ -2,42 +2,82 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Souzaiosoficial — Acesso</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
 body {
   background:#06070a;
   color:#fff;
-  font-family: Arial;
+  font-family:'DM Sans',sans-serif;
   display:flex;
-  align-items:center;
   justify-content:center;
-  height:100vh;
+  align-items:center;
+  min-height:100vh;
+  padding:20px;
 }
 
 .card {
   background:#0d0f14;
-  padding:30px;
-  border-radius:15px;
-  width:300px;
-  text-align:center;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px;
+  padding:35px;
+  width:100%;
+  max-width:400px;
+}
+
+h1 {
+  font-family:'Syne';
+  font-weight:800;
+  font-size:24px;
+  margin-bottom:10px;
+}
+
+.subtitle {
+  color:#8890a0;
+  font-size:14px;
+  margin-bottom:25px;
 }
 
 input {
   width:100%;
-  padding:10px;
-  margin:10px 0;
+  padding:13px;
+  margin-bottom:12px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.08);
+  background:#111;
+  color:#fff;
 }
 
 button {
   width:100%;
-  padding:12px;
-  background:#4f8ef7;
+  padding:14px;
   border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#4f8ef7,#7b5ea7);
   color:#fff;
+  font-weight:700;
   cursor:pointer;
-  border-radius:8px;
+}
+
+button:hover {
+  opacity:0.9;
+}
+
+.erro {
+  margin-top:10px;
+  color:#f09595;
+  font-size:13px;
+}
+
+.sucesso {
+  text-align:center;
+}
+
+.btn-download {
+  margin-top:20px;
 }
 </style>
 </head>
@@ -46,30 +86,40 @@ button {
 
 <div class="card">
 
+<!-- LOGIN -->
 <div id="login">
-<h2>Login</h2>
+
+<h1>Acesso ao Perfil</h1>
+<p class="subtitle">Insira suas credenciais para continuar</p>
 
 <input id="username" placeholder="Usuário">
 <input id="password" type="password" placeholder="Senha">
 
 <button onclick="login()">Entrar</button>
+
+<div id="erro" class="erro"></div>
+
 </div>
 
-<div id="sucesso" style="display:none;">
-<h3>Bem-vindo!</h3>
+<!-- SUCESSO -->
+<div id="sucesso" class="sucesso" style="display:none">
 
-<button onclick="baixar()">Baixar Perfil Oficial</button>
+<h1>Acesso liberado</h1>
+<p class="subtitle">Clique abaixo para baixar o perfil</p>
+
+<button class="btn-download" onclick="baixar()">Baixar Perfil Oficial</button>
+
 </div>
 
 </div>
 
 <script>
 
-async function login() {
+async function login(){
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
 
-  const res = await fetch('/api/login', {
+  const res = await fetch('/api/login',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({username,password})
@@ -81,12 +131,11 @@ async function login() {
     document.getElementById('login').style.display='none';
     document.getElementById('sucesso').style.display='block';
   } else {
-    alert(data.erro);
+    document.getElementById('erro').textContent = data.erro || 'Erro no login';
   }
 }
 
 function baixar(){
-  // 🔥 CORREÇÃO AQUI
   window.location.href = "/api/download";
 }
 
