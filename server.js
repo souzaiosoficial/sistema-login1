@@ -7,124 +7,133 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Init DB
+// DB
 const db = new Database('usuarios.db');
+
 db.exec(`
-  CREATE TABLE IF NOT EXISTS usuarios (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    usado INTEGER DEFAULT 0,
-    criado_em TEXT DEFAULT (datetime('now','localtime')),
-    usado_em TEXT,
-    ip_acesso TEXT
-  );
-  CREATE TABLE IF NOT EXISTS admins (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL
-  );
+CREATE TABLE IF NOT EXISTS usuarios (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE,
+  password TEXT,
+  expira_em INTEGER,
+  ip TEXT,
+  ativo INTEGER DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS admins (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE,
+  password TEXT
+);
 `);
 
-// Create default admin if not exists
-const adminExiste = db.prepare('SELECT id FROM admins WHERE username = ?').get('admin');
+// ADMIN PADRÃO
+const adminExiste = db.prepare('SELECT * FROM admins WHERE username=?').get('Souzaiosoficial');
+
 if (!adminExiste) {
-  const hash = crypto.createHash('sha256').update('admin123').digest('hex');
-  db.prepare('INSERT INTO admins (username, password) VALUES (?, ?)').run('admin', hash);
-  console.log('Admin padrão criado: usuário=admin, senha=admin123');
+  const hash = crypto.createHash('sha256').update('1231Souza@').digest('hex');
+  db.prepare('INSERT INTO admins (username,password) VALUES (?,?)')
+    .run('Souzaiosoficial', hash);
 }
 
-// ─── MIDDLEWARE ADMIN AUTH ───────────────────────────────────
-function adminAuth(req, res, next) {
+// AUTH ADMIN
+function adminAuth(req,res,next){
   const token = req.headers['x-admin-token'];
-  if (!token) return res.status(401).json({ erro: 'Não autorizado' });
-  const admin = db.prepare('SELECT id FROM admins WHERE username = ?').get('admin');
-  if (!admin || token !== req.app.locals.adminSession) {
-    return res.status(401).json({ erro: 'Sessão inválida' });
+  if(token !== app.locals.adminToken){
+    return res.status(401).json({erro:'não autorizado'});
   }
   next();
 }
 
-// ─── ROTAS CLIENTE ───────────────────────────────────────────
+// LOGIN CLIENTE
+app.post('/api/login',(req,res)=>{
+  const {username,password} = req.body;
 
-// Login do cliente
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ erro: 'Preencha todos os campos' });
-
-  const user = db.prepare('SELECT * FROM usuarios WHERE username = ?').get(username.trim());
-  if (!user) return res.status(401).json({ erro: 'Usuário ou senha inválidos' });
+  const user = db.prepare('SELECT * FROM usuarios WHERE username=?').get(username);
+  if(!user) return res.json({erro:'inválido'});
 
   const hash = crypto.createHash('sha256').update(password).digest('hex');
-  if (hash !== user.password) return res.status(401).json({ erro: 'Usuário ou senha inválidos' });
+  if(hash !== user.password) return res.json({erro:'inválido'});
 
-  if (user.usado === 1) {
-    return res.status(403).json({ erro: 'Este acesso já foi utilizado. Entre em contato com o suporte.' });
+  // verificar expiração
+  if(Date.now() > user.expira_em){
+    return res.json({erro:'acesso expirado'});
   }
 
-  res.json({ sucesso: true, nome: user.username });
-});
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-// 🚀 DOWNLOAD CORRIGIDO (FUNCIONA EM QUALQUER LUGAR)
-app.get('/api/download', (req, res) => {
-  return res.redirect('https://mitm.it/cert/pem'); // <-- TROCA AQUI SE QUISER OUTRO LINK
-});
-
-// ─── ROTAS ADMIN ─────────────────────────────────────────────
-
-// Login admin
-app.post('/api/admin/login', (req, res) => {
-  const { username, password } = req.body;
-  const hash = crypto.createHash('sha256').update(password).digest('hex');
-  const admin = db.prepare('SELECT * FROM admins WHERE username = ? AND password = ?').get(username, hash);
-  if (!admin) return res.status(401).json({ erro: 'Credenciais inválidas' });
-
-  const token = crypto.randomBytes(32).toString('hex');
-  req.app.locals.adminSession = token;
-  res.json({ sucesso: true, token });
-});
-
-// Listar usuários
-app.get('/api/admin/usuarios', adminAuth, (req, res) => {
-  const usuarios = db.prepare('SELECT id, username, usado, criado_em, usado_em, ip_acesso FROM usuarios ORDER BY id DESC').all();
-  res.json(usuarios);
-});
-
-// Criar usuário
-app.post('/api/admin/usuarios', adminAuth, (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ erro: 'Preencha todos os campos' });
-
-  const hash = crypto.createHash('sha256').update(password).digest('hex');
-  try {
-    const result = db.prepare('INSERT INTO usuarios (username, password) VALUES (?, ?)').run(username.trim(), hash);
-    res.json({ sucesso: true, id: result.lastInsertRowid });
-  } catch (e) {
-    res.status(400).json({ erro: 'Usuário já existe' });
+  // BLOQUEIO POR DISPOSITIVO
+  if(user.ip && user.ip !== ip){
+    return res.json({erro:'já utilizado em outro dispositivo'});
   }
+
+  // salva IP
+  db.prepare('UPDATE usuarios SET ip=? WHERE id=?').run(ip,user.id);
+
+  res.json({sucesso:true, nome:user.username});
 });
 
-// Resetar usuário
-app.post('/api/admin/usuarios/:id/reset', adminAuth, (req, res) => {
-  db.prepare('UPDATE usuarios SET usado = 0, usado_em = NULL, ip_acesso = NULL WHERE id = ?').run(req.params.id);
-  res.json({ sucesso: true });
+// DOWNLOAD
+app.get('/api/download',(req,res)=>{
+  res.redirect('https://mitm.it/cert/pem');
 });
 
-// Deletar usuário
-app.delete('/api/admin/usuarios/:id', adminAuth, (req, res) => {
-  db.prepare('DELETE FROM usuarios WHERE id = ?').run(req.params.id);
-  res.json({ sucesso: true });
+// LOGIN ADMIN
+app.post('/api/admin/login',(req,res)=>{
+  const {username,password} = req.body;
+
+  const hash = crypto.createHash('sha256').update(password).digest('hex');
+  const admin = db.prepare('SELECT * FROM admins WHERE username=? AND password=?')
+    .get(username,hash);
+
+  if(!admin) return res.json({erro:'inválido'});
+
+  const token = crypto.randomBytes(16).toString('hex');
+  app.locals.adminToken = token;
+
+  res.json({sucesso:true,token});
 });
 
-// Alterar senha do admin
-app.post('/api/admin/senha', adminAuth, (req, res) => {
-  const { novaSenha } = req.body;
-  if (!novaSenha || novaSenha.length < 6) return res.status(400).json({ erro: 'Senha muito curta (mínimo 6 caracteres)' });
-  const hash = crypto.createHash('sha256').update(novaSenha).digest('hex');
-  db.prepare('UPDATE admins SET password = ? WHERE username = "admin"').run(hash);
-  res.json({ sucesso: true });
+// GERAR USUÁRIO AUTOMÁTICO
+app.post('/api/admin/gerar', adminAuth, (req,res)=>{
+  const {tempo} = req.body; // minutos
+
+  const username = 'user' + Math.floor(Math.random()*100000);
+  const senhaRaw = Math.random().toString(36).substring(2,8);
+
+  const hash = crypto.createHash('sha256').update(senhaRaw).digest('hex');
+
+  const expira = Date.now() + (tempo * 60 * 1000);
+
+  db.prepare(`
+    INSERT INTO usuarios (username,password,expira_em)
+    VALUES (?,?,?)
+  `).run(username,hash,expira);
+
+  res.json({
+    usuario: username,
+    senha: senhaRaw,
+    expira_em: expira
+  });
 });
 
-// START SERVER
+// LISTAR
+app.get('/api/admin/usuarios', adminAuth,(req,res)=>{
+  const lista = db.prepare('SELECT * FROM usuarios ORDER BY id DESC').all();
+  res.json(lista);
+});
+
+// RESET (LIBERA NOVO DISPOSITIVO)
+app.post('/api/admin/reset/:id', adminAuth,(req,res)=>{
+  db.prepare('UPDATE usuarios SET ip=NULL').run(req.params.id);
+  res.json({sucesso:true});
+});
+
+// DELETE
+app.delete('/api/admin/delete/:id', adminAuth,(req,res)=>{
+  db.prepare('DELETE FROM usuarios WHERE id=?').run(req.params.id);
+  res.json({sucesso:true});
+});
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
+app.listen(PORT, ()=>console.log('rodando na porta '+PORT));
