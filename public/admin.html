@@ -3,216 +3,414 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Admin</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
-
+<title>Souzaiosoficial — Painel Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
-body {
-  background:#06070a;
-  color:#fff;
-  font-family:'DM Sans',sans-serif;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-  padding:20px;
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #06070a;
+    --bg-card: #0d0f14;
+    --bg-card2: #12151c;
+    --border: rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.12);
+    --accent: #4f8ef7;
+    --text: #f0f2f7;
+    --text-muted: #8890a0;
+    --text-dim: #555e6e;
+    --success: #30d986;
+    --danger: #e24b4a;
+    --warn: #f5a623;
+    --radius: 12px;
+    --radius-lg: 18px;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; min-height: 100vh; }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse 700px 400px at 10% -5%, rgba(79,142,247,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
 
-.card {
-  background:#0d0f14;
-  border:1px solid rgba(255,255,255,0.1);
-  border-radius:20px;
-  padding:30px;
-  width:100%;
-  max-width:600px;
-}
+  /* LOGIN */
+  #tela-admin-login {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 20px;
+  }
+  .login-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius-lg);
+    padding: 36px 32px;
+    width: 100%; max-width: 380px;
+    position: relative;
+  }
+  .login-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(79,142,247,0.5), transparent);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .admin-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(226,75,74,0.1);
+    border: 1px solid rgba(226,75,74,0.25);
+    border-radius: 999px;
+    padding: 6px 14px 6px 10px;
+    margin-bottom: 20px;
+    font-size: 11px; font-family: 'Syne', sans-serif; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: #f09595;
+  }
+  .admin-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--danger); }
 
-h1 {
-  font-family:'Syne';
-  font-weight:800;
-  margin-bottom:20px;
-}
+  /* PAINEL */
+  #tela-painel { display: none; }
+  .topbar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .topbar-brand { display: flex; align-items: center; gap: 10px; }
+  .topbar-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #4f8ef7, #7b5ea7);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .topbar-icon svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .topbar-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: #fff; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .badge-admin {
+    background: rgba(226,75,74,0.1); border: 1px solid rgba(226,75,74,0.2);
+    border-radius: 999px; padding: 4px 12px;
+    font-size: 11px; font-weight: 500; color: #f09595; letter-spacing: 0.05em;
+  }
+  .btn-sm {
+    padding: 7px 16px; border-radius: 8px;
+    border: 1px solid var(--border-bright);
+    background: transparent; color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .btn-sm:hover { background: rgba(255,255,255,0.05); color: var(--text); }
 
-input {
-  width:100%;
-  padding:12px;
-  margin-bottom:10px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,0.1);
-  background:#111;
-  color:#fff;
-}
+  .content { max-width: 900px; margin: 0 auto; padding: 32px 20px 60px; }
 
-button {
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  background:linear-gradient(135deg,#4f8ef7,#7b5ea7);
-  color:#fff;
-  cursor:pointer;
-  font-weight:700;
-}
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 32px; }
+  .stat-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px 20px;
+  }
+  .stat-label { font-size: 12px; color: var(--text-dim); margin-bottom: 6px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 26px; color: #fff; }
+  .stat-value.blue { color: var(--accent); }
+  .stat-value.green { color: var(--success); }
+  .stat-value.yellow { color: var(--warn); }
 
-button:hover {
-  opacity:0.9;
-}
+  /* Section */
+  .section-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; color: #fff; margin-bottom: 16px; }
 
-.grid {
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:10px;
-  margin-bottom:20px;
-}
+  /* Form criar usuário */
+  .criar-card {
+    background: var(--bg-card); border: 1px solid var(--border-bright);
+    border-radius: var(--radius-lg); padding: 24px;
+    margin-bottom: 28px;
+  }
+  .form-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .form-row input {
+    flex: 1; min-width: 140px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-bright);
+    border-radius: 9px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-row input:focus { border-color: rgba(79,142,247,0.4); }
+  .form-row input::placeholder { color: var(--text-dim); }
+  .btn-criar {
+    padding: 11px 22px;
+    background: linear-gradient(135deg, #3d78e8, #5a45b0);
+    color: #fff;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
+    border: none; border-radius: 9px; cursor: pointer;
+    transition: opacity 0.18s;
+    white-space: nowrap;
+  }
+  .btn-criar:hover { opacity: 0.88; }
 
-.table {
-  margin-top:20px;
-  width:100%;
-}
+  /* Tabela */
+  .table-wrap {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
+  }
+  .table-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .table-header span { color: var(--text-muted); font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left; padding: 12px 20px;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: 13.5px; color: var(--text-muted); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .td-user { color: var(--text); font-weight: 500; font-size: 14px; }
 
-.table tr {
-  border-bottom:1px solid rgba(255,255,255,0.05);
-}
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 500;
+  }
+  .badge-ok { background: rgba(48,217,134,0.1); color: var(--success); border: 1px solid rgba(48,217,134,0.2); }
+  .badge-usado { background: rgba(226,75,74,0.1); color: #f09595; border: 1px solid rgba(226,75,74,0.2); }
 
-.table td {
-  padding:10px;
-  font-size:14px;
-}
+  .td-actions { display: flex; gap: 8px; }
+  .btn-reset {
+    padding: 5px 12px; border-radius: 7px;
+    border: 1px solid rgba(245,166,35,0.25);
+    background: rgba(245,166,35,0.08); color: var(--warn);
+    font-size: 12px; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-reset:hover { background: rgba(245,166,35,0.15); }
+  .btn-del {
+    padding: 5px 12px; border-radius: 7px;
+    border: 1px solid rgba(226,75,74,0.2);
+    background: rgba(226,75,74,0.07); color: #f09595;
+    font-size: 12px; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-del:hover { background: rgba(226,75,74,0.15); }
 
-.actions button {
-  margin-right:5px;
-  padding:6px 10px;
-  font-size:12px;
-}
+  .empty-state { text-align: center; padding: 40px; color: var(--text-dim); font-size: 14px; }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: #1a1e28; border: 1px solid var(--border-bright);
+    border-radius: 12px; padding: 14px 20px;
+    font-size: 14px; color: var(--text);
+    opacity: 0; transform: translateY(8px);
+    transition: all 0.25s; pointer-events: none; z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* inputs genéricos */
+  input[type=text], input[type=password] { -webkit-appearance: none; }
+
+  .msg-form { margin-top: 10px; font-size: 13px; display: none; }
+  .msg-form.erro { color: #f09595; }
+  .msg-form.ok { color: var(--success); }
+
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .topbar { padding: 14px 16px; }
+    .content { padding: 20px 14px 48px; }
+    th, td { padding: 10px 12px; }
+    .td-actions { flex-direction: column; gap: 5px; }
+  }
 </style>
 </head>
-
 <body>
 
-<div class="card">
-
-<!-- LOGIN -->
-<div id="login">
-<h1>Admin Login</h1>
-
-<input id="admin-user" placeholder="Usuário">
-<input id="admin-pass" type="password" placeholder="Senha">
-
-<button onclick="loginAdmin()">Entrar</button>
+<!-- LOGIN ADMIN -->
+<div id="tela-admin-login">
+  <div class="login-card">
+    <div class="admin-badge"><div class="admin-badge-dot"></div> Painel Admin</div>
+    <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:24px;color:#fff;margin-bottom:6px;">Acesso Restrito</h1>
+    <p style="color:var(--text-muted);font-size:13px;margin-bottom:28px;">Apenas administradores autorizados.</p>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:7px;">Usuário Admin</label>
+      <input type="text" id="a-user" placeholder="admin" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border-bright);border-radius:9px;padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:7px;">Senha</label>
+      <input type="password" id="a-pass" placeholder="••••••••" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border-bright);border-radius:9px;padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+    </div>
+    <button onclick="loginAdmin()" style="width:100%;padding:13px;background:linear-gradient(135deg,#3d78e8,#5a45b0);color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;border:none;border-radius:10px;cursor:pointer;">Entrar no Painel</button>
+    <div id="a-erro" style="color:#f09595;font-size:13px;margin-top:12px;display:none;"></div>
+  </div>
 </div>
 
 <!-- PAINEL -->
-<div id="painel" style="display:none">
+<div id="tela-painel">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      <span class="topbar-title">Souzaiosoficial</span>
+    </div>
+    <div class="topbar-right">
+      <span class="badge-admin">ADMIN</span>
+      <button class="btn-sm" onclick="sair()">Sair</button>
+    </div>
+  </div>
 
-<h1>Painel</h1>
+  <div class="content">
+    <!-- Stats -->
+    <div class="stats" id="stats">
+      <div class="stat-card"><div class="stat-label">Total de Usuários</div><div class="stat-value blue" id="s-total">0</div></div>
+      <div class="stat-card"><div class="stat-label">Disponíveis</div><div class="stat-value green" id="s-disp">0</div></div>
+      <div class="stat-card"><div class="stat-label">Já Utilizados</div><div class="stat-value yellow" id="s-used">0</div></div>
+    </div>
 
-<div class="grid">
-<button onclick="gerar(1)">1 DIA</button>
-<button onclick="gerar(7)">7 DIAS</button>
-<button onclick="gerar(30)">30 DIAS</button>
+    <!-- Criar usuário -->
+    <div class="section-title">Criar Novo Acesso</div>
+    <div class="criar-card">
+      <div class="form-row">
+        <input type="text" id="novo-user" placeholder="Nome de usuário" autocomplete="off" autocorrect="off" autocapitalize="none">
+        <input type="text" id="novo-pass" placeholder="Senha" autocomplete="off">
+        <button class="btn-criar" onclick="criarUsuario()">+ Criar Acesso</button>
+      </div>
+      <div class="msg-form" id="msg-criar"></div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="section-title">Acessos Cadastrados</div>
+    <div class="table-wrap">
+      <div class="table-header">
+        <span id="count-label">Carregando...</span>
+        <button class="btn-sm" onclick="carregarUsuarios()">↻ Atualizar</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Usuário</th>
+              <th>Status</th>
+              <th>Criado em</th>
+              <th>Usado em</th>
+              <th>IP</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
-<table class="table">
-<tbody id="lista"></tbody>
-</table>
-
-</div>
-
-</div>
+<div class="toast" id="toast"></div>
 
 <script>
+let adminToken = null;
 
-let token = null;
-
-async function loginAdmin(){
-  const username = document.getElementById('admin-user').value;
-  const password = document.getElementById('admin-pass').value;
-
-  const res = await fetch('/api/admin/login',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({username,password})
-  });
-
-  const data = await res.json();
-
-  if(data.sucesso){
-    token = data.token;
-    document.getElementById('login').style.display='none';
-    document.getElementById('painel').style.display='block';
-    carregar();
-  } else {
-    alert("Erro login");
-  }
+async function loginAdmin() {
+  const u = document.getElementById('a-user').value;
+  const p = document.getElementById('a-pass').value;
+  const erro = document.getElementById('a-erro');
+  erro.style.display = 'none';
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({username: u, password: p})
+    });
+    const data = await res.json();
+    if (data.sucesso) {
+      adminToken = data.token;
+      document.getElementById('tela-admin-login').style.display = 'none';
+      document.getElementById('tela-painel').style.display = 'block';
+      carregarUsuarios();
+    } else {
+      erro.textContent = data.erro || 'Credenciais inválidas';
+      erro.style.display = 'block';
+    }
+  } catch(e) { erro.textContent = 'Erro de conexão'; erro.style.display = 'block'; }
 }
 
-async function gerar(dias){
-
-  const tempo = dias * 1440; // minutos
-
-  const res = await fetch('/api/admin/gerar',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-admin-token': token
-    },
-    body: JSON.stringify({tempo})
-  });
-
-  const data = await res.json();
-
-  alert(`LOGIN CRIADO
-
-User: ${data.usuario}
-Senha: ${data.senha}
-Validade: ${dias} dias`);
-
-  carregar();
-}
-
-async function carregar(){
-  const res = await fetch('/api/admin/usuarios',{
-    headers:{'x-admin-token':token}
-  });
-
-  const lista = await res.json();
-
-  const el = document.getElementById('lista');
-  el.innerHTML = '';
-
-  lista.forEach(u=>{
-    el.innerHTML += `
+async function carregarUsuarios() {
+  try {
+    const res = await fetch('/api/admin/usuarios', { headers: {'x-admin-token': adminToken} });
+    const lista = await res.json();
+    const tbody = document.getElementById('tbody');
+    const total = lista.length;
+    const usados = lista.filter(u => u.usado === 1).length;
+    document.getElementById('s-total').textContent = total;
+    document.getElementById('s-disp').textContent = total - usados;
+    document.getElementById('s-used').textContent = usados;
+    document.getElementById('count-label').textContent = total + ' acesso(s) cadastrado(s)';
+    if (total === 0) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">Nenhum acesso cadastrado ainda.</div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = lista.map(u => `
       <tr>
-        <td>${u.username}</td>
-        <td>${u.ip || '-'}</td>
-        <td class="actions">
-          <button onclick="resetar(${u.id})">Reset</button>
-          <button onclick="deletar(${u.id})">Excluir</button>
+        <td style="color:var(--text-dim)">${u.id}</td>
+        <td class="td-user">${u.username}</td>
+        <td>${u.usado ? '<span class="badge badge-usado">● Utilizado</span>' : '<span class="badge badge-ok">● Disponível</span>'}</td>
+        <td>${u.criado_em || '—'}</td>
+        <td>${u.usado_em || '—'}</td>
+        <td style="font-size:12px;color:var(--text-dim)">${u.ip_acesso || '—'}</td>
+        <td class="td-actions">
+          ${u.usado ? `<button class="btn-reset" onclick="resetar(${u.id})">Resetar</button>` : ''}
+          <button class="btn-del" onclick="deletar(${u.id})">Excluir</button>
         </td>
       </tr>
-    `;
-  });
+    `).join('');
+  } catch(e) { mostrarToast('Erro ao carregar usuários'); }
 }
 
-async function resetar(id){
-  await fetch('/api/admin/reset/'+id,{
-    method:'POST',
-    headers:{'x-admin-token':token}
-  });
-
-  carregar();
+async function criarUsuario() {
+  const username = document.getElementById('novo-user').value.trim();
+  const password = document.getElementById('novo-pass').value.trim();
+  const msg = document.getElementById('msg-criar');
+  msg.style.display = 'none';
+  if (!username || !password) { mostrarMsgCriar('Preencha usuário e senha.', 'erro'); return; }
+  try {
+    const res = await fetch('/api/admin/usuarios', {
+      method: 'POST', headers: {'Content-Type':'application/json','x-admin-token':adminToken},
+      body: JSON.stringify({username, password})
+    });
+    const data = await res.json();
+    if (data.sucesso) {
+      document.getElementById('novo-user').value = '';
+      document.getElementById('novo-pass').value = '';
+      mostrarMsgCriar('Acesso criado com sucesso!', 'ok');
+      carregarUsuarios();
+    } else { mostrarMsgCriar(data.erro || 'Erro ao criar.', 'erro'); }
+  } catch(e) { mostrarMsgCriar('Erro de conexão.', 'erro'); }
 }
 
-async function deletar(id){
-  await fetch('/api/admin/delete/'+id,{
-    method:'DELETE',
-    headers:{'x-admin-token':token}
-  });
-
-  carregar();
+async function resetar(id) {
+  await fetch(`/api/admin/usuarios/${id}/reset`, { method:'POST', headers:{'x-admin-token':adminToken} });
+  mostrarToast('Acesso resetado com sucesso!');
+  carregarUsuarios();
 }
 
+async function deletar(id) {
+  if (!confirm('Excluir este acesso?')) return;
+  await fetch(`/api/admin/usuarios/${id}`, { method:'DELETE', headers:{'x-admin-token':adminToken} });
+  mostrarToast('Acesso excluído.');
+  carregarUsuarios();
+}
+
+function sair() { adminToken = null; location.reload(); }
+
+function mostrarMsgCriar(txt, tipo) {
+  const el = document.getElementById('msg-criar');
+  el.textContent = txt; el.className = 'msg-form ' + tipo;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+
+function mostrarToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !adminToken) loginAdmin();
+});
 </script>
-
 </body>
 </html>
