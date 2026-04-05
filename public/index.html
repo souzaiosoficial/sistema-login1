@@ -1,60 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Souzaiosoficial — Acesso</title>
+
+<style>
+body {
+  background:#06070a;
+  color:#fff;
+  font-family: Arial;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+}
+
+.card {
+  background:#0d0f14;
+  padding:30px;
+  border-radius:15px;
+  width:300px;
+  text-align:center;
+}
+
+input {
+  width:100%;
+  padding:10px;
+  margin:10px 0;
+}
+
+button {
+  width:100%;
+  padding:12px;
+  background:#4f8ef7;
+  border:none;
+  color:#fff;
+  cursor:pointer;
+  border-radius:8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div id="login">
+<h2>Login</h2>
+
+<input id="username" placeholder="Usuário">
+<input id="password" type="password" placeholder="Senha">
+
+<button onclick="login()">Entrar</button>
+</div>
+
+<div id="sucesso" style="display:none;">
+<h3>Bem-vindo!</h3>
+
+<button onclick="baixar()">Baixar Perfil Oficial</button>
+</div>
+
+</div>
+
 <script>
-let sessionToken = null;
 
-async function fazerLogin() {
-  const username = document.getElementById('username').value.trim();
+async function login() {
+  const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
-  const btn = document.getElementById('btn-login');
-  const erro = document.getElementById('msg-erro');
 
-  if (!username || !password) {
-    mostrarErro('Preencha usuário e senha.');
-    return;
+  const res = await fetch('/api/login', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({username,password})
+  });
+
+  const data = await res.json();
+
+  if(data.sucesso){
+    document.getElementById('login').style.display='none';
+    document.getElementById('sucesso').style.display='block';
+  } else {
+    alert(data.erro);
   }
-
-  btn.disabled = true;
-  btn.textContent = 'Verificando...';
-  erro.style.display = 'none';
-
-  try {
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await res.json();
-
-    if (data.sucesso) {
-      document.getElementById('nome-usuario').textContent = data.nome;
-      document.getElementById('tela-login').style.display = 'none';
-      document.getElementById('tela-sucesso').style.display = 'block';
-    } else {
-      mostrarErro(data.erro || 'Erro ao fazer login.');
-    }
-  } catch (e) {
-    mostrarErro('Erro de conexão. Tente novamente.');
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Entrar';
 }
 
-function fazerDownload() {
-  const btn = document.getElementById('btn-baixar');
-  btn.style.opacity = '0.6';
-  btn.style.pointerEvents = 'none';
-
-  // 🔥 REDIRECIONAMENTO DIRETO (CORRIGIDO)
-  window.location.href = '/api/download';
+function baixar(){
+  // 🔥 CORREÇÃO AQUI
+  window.location.href = "/api/download";
 }
 
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter') fazerLogin();
-});
-
-function mostrarErro(msg) {
-  const el = document.getElementById('msg-erro');
-  el.textContent = msg;
-  el.style.display = 'block';
-}
 </script>
+
+</body>
+</html>
