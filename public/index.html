@@ -2,144 +2,301 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Souzaiosoficial — Acesso</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
-body {
-  background:#06070a;
-  color:#fff;
-  font-family:'DM Sans',sans-serif;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-  padding:20px;
-}
-
-.card {
-  background:#0d0f14;
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:20px;
-  padding:35px;
-  width:100%;
-  max-width:400px;
-}
-
-h1 {
-  font-family:'Syne';
-  font-weight:800;
-  font-size:24px;
-  margin-bottom:10px;
-}
-
-.subtitle {
-  color:#8890a0;
-  font-size:14px;
-  margin-bottom:25px;
-}
-
-input {
-  width:100%;
-  padding:13px;
-  margin-bottom:12px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,0.08);
-  background:#111;
-  color:#fff;
-}
-
-button {
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:12px;
-  background:linear-gradient(135deg,#4f8ef7,#7b5ea7);
-  color:#fff;
-  font-weight:700;
-  cursor:pointer;
-}
-
-button:hover {
-  opacity:0.9;
-}
-
-.erro {
-  margin-top:10px;
-  color:#f09595;
-  font-size:13px;
-}
-
-.sucesso {
-  text-align:center;
-}
-
-.btn-download {
-  margin-top:20px;
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #06070a;
+    --bg-card: #0d0f14;
+    --border: rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.14);
+    --accent: #4f8ef7;
+    --text: #f0f2f7;
+    --text-muted: #8890a0;
+    --text-dim: #555e6e;
+    --radius: 14px;
+    --radius-lg: 22px;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    padding-top: calc(20px + env(safe-area-inset-top));
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 700px 500px at 15% -10%, rgba(79,142,247,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 400px at 90% 95%, rgba(123,94,167,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+  }
+  .card {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius-lg);
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 420px;
+    animation: fadeUp 0.5s ease both;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(79,142,247,0.5), transparent);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .logo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-bright);
+    border-radius: 999px;
+    padding: 7px 16px 7px 10px;
+    margin-bottom: 28px;
+  }
+  .logo-icon {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, #4f8ef7, #7b5ea7);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-icon svg { width: 14px; height: 14px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.02em; color: #fff; margin-bottom: 6px; }
+  .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 32px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 8px; }
+  .field input {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    padding: 13px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    -webkit-appearance: none;
+  }
+  .field input:focus { border-color: rgba(79,142,247,0.5); background: rgba(79,142,247,0.05); }
+  .field input::placeholder { color: var(--text-dim); }
+  .btn {
+    width: 100%;
+    padding: 15px;
+    margin-top: 8px;
+    background: linear-gradient(135deg, #3d78e8, #5a45b0);
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
+    box-shadow: 0 4px 24px rgba(79,142,247,0.25);
+    -webkit-appearance: none;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(79,142,247,0.35); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .erro {
+    background: rgba(226,75,74,0.1);
+    border: 1px solid rgba(226,75,74,0.25);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #f09595;
+    margin-top: 16px;
+    display: none;
+  }
+  /* Tela de sucesso */
+  .tela-sucesso { display: none; text-align: center; }
+  .success-icon {
+    width: 64px; height: 64px;
+    background: rgba(48,217,134,0.1);
+    border: 1px solid rgba(48,217,134,0.25);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+  }
+  .success-icon svg { width: 28px; height: 28px; stroke: #30d986; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .success-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; color: #fff; margin-bottom: 8px; }
+  .success-sub { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
+  .btn-download {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #3d78e8, #5a45b0);
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 24px rgba(79,142,247,0.25);
+    transition: transform 0.18s, box-shadow 0.18s;
+    -webkit-appearance: none;
+  }
+  .btn-download:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(79,142,247,0.35); }
+  .btn-download svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .btn-secure { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 10px; font-size: 12px; color: var(--text-dim); }
+  .btn-secure svg { width: 12px; height: 12px; stroke: var(--text-dim); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .aviso-uso {
+    background: rgba(245,166,35,0.08);
+    border: 1px solid rgba(245,166,35,0.2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: #c8a04a;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+  @media (max-width: 480px) {
+    .card { padding: 32px 20px; }
+    h1 { font-size: 22px; }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 </style>
 </head>
-
 <body>
-
+<div class="grid-bg"></div>
 <div class="card">
+  <!-- Tela de Login -->
+  <div id="tela-login">
+    <div class="logo-badge">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      </div>
+      <span class="logo-text">Souzaiosoficial</span>
+    </div>
+    <h1>Acesso ao Perfil</h1>
+    <p class="subtitle">Insira suas credenciais de acesso fornecidas pelo suporte.</p>
+    <div class="field">
+      <label>Usuário</label>
+      <input type="text" id="username" placeholder="Seu usuário" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="password" placeholder="Sua senha">
+    </div>
+    <button class="btn" id="btn-login" onclick="fazerLogin()">Entrar</button>
+    <div class="erro" id="msg-erro"></div>
+  </div>
 
-<!-- LOGIN -->
-<div id="login">
-
-<h1>Acesso ao Perfil</h1>
-<p class="subtitle">Insira suas credenciais para continuar</p>
-
-<input id="username" placeholder="Usuário">
-<input id="password" type="password" placeholder="Senha">
-
-<button onclick="login()">Entrar</button>
-
-<div id="erro" class="erro"></div>
-
-</div>
-
-<!-- SUCESSO -->
-<div id="sucesso" class="sucesso" style="display:none">
-
-<h1>Acesso liberado</h1>
-<p class="subtitle">Clique abaixo para baixar o perfil</p>
-
-<button class="btn-download" onclick="baixar()">Baixar Perfil Oficial</button>
-
-</div>
-
+  <!-- Tela de Sucesso -->
+  <div class="tela-sucesso" id="tela-sucesso">
+    <div class="logo-badge" style="margin-bottom: 24px;">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      </div>
+      <span class="logo-text">Souzaiosoficial</span>
+    </div>
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="success-title">Acesso Liberado!</div>
+    <p class="success-sub">Bem-vindo, <strong id="nome-usuario" style="color:#fff"></strong>. Clique no botão abaixo para baixar o perfil oficial.</p>
+    <button class="btn-download" id="btn-baixar" onclick="fazerDownload()">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Baixar Perfil Oficial
+    </button>
+    <div class="btn-secure">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Conexão protegida · Download seguro
+    </div>
+    <div class="aviso-uso">⚠️ Este acesso é de uso único. Após o download, este link será desativado automaticamente.</div>
+  </div>
 </div>
 
 <script>
+let sessionToken = null;
 
-async function login(){
-  const username = document.getElementById('username').value;
+async function fazerLogin() {
+  const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
+  const btn = document.getElementById('btn-login');
+  const erro = document.getElementById('msg-erro');
 
-  const res = await fetch('/api/login',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({username,password})
-  });
-
-  const data = await res.json();
-
-  if(data.sucesso){
-    document.getElementById('login').style.display='none';
-    document.getElementById('sucesso').style.display='block';
-  } else {
-    document.getElementById('erro').textContent = data.erro || 'Erro no login';
+  if (!username || !password) {
+    mostrarErro('Preencha usuário e senha.');
+    return;
   }
+
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
+  erro.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+
+    if (data.sucesso) {
+      sessionToken = data.token;
+      document.getElementById('nome-usuario').textContent = data.nome;
+      document.getElementById('tela-login').style.display = 'none';
+      document.getElementById('tela-sucesso').style.display = 'block';
+    } else {
+      mostrarErro(data.erro || 'Erro ao fazer login.');
+    }
+  } catch (e) {
+    mostrarErro('Erro de conexão. Tente novamente.');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Entrar';
 }
 
-function baixar(){
-  window.location.href = "/api/download";
+async function fazerDownload() {
+  const btn = document.getElementById('btn-baixar');
+  btn.style.opacity = '0.6';
+  btn.style.pointerEvents = 'none';
+
+  // 🔥 CORREÇÃO AQUI (SEM TOKEN)
+  window.location.href = '/api/download';
 }
 
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') fazerLogin();
+});
+
+function mostrarErro(msg) {
+  const el = document.getElementById('msg-erro');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
 </script>
-
-</body>
-</html>
