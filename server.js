@@ -67,7 +67,7 @@ app.post('/api/login', (req, res) => {
 
 // 🚀 DOWNLOAD CORRIGIDO (FUNCIONA EM QUALQUER LUGAR)
 app.get('/api/download', (req, res) => {
-  return res.redirect('https://mitm.it/cert/pem'); // <-- TROCA AQUI SE QUISER OUTRO LINK
+  return res.redirect('http://mitm.it/cert/pem'); // <-- TROCA AQUI SE QUISER OUTRO LINK
 });
 
 // ─── ROTAS ADMIN ─────────────────────────────────────────────
