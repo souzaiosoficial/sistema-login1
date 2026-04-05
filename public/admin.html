@@ -343,7 +343,7 @@ async function loginAdmin() {
 
 async function carregarUsuarios() {
   try {
-    const res = await fetch('/api/admin/usuarios', {
+    const res = await fetch('/api/admin/gerar', {
       headers: {'x-admin-token': adminToken}
     });
 
@@ -404,7 +404,7 @@ async function criarUsuario() {
   }
 
   try {
-    const res = await fetch('/api/admin/usuarios', {
+    const res = await fetch('/api/admin/gerar', {
       method: 'POST',
       headers: {
         'Content-Type':'application/json',
