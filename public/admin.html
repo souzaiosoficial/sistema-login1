@@ -5,41 +5,84 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel Admin</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+
 <style>
 body {
   background:#06070a;
   color:#fff;
-  font-family: Arial;
+  font-family:'DM Sans',sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
   padding:20px;
 }
 
 .card {
   background:#0d0f14;
-  padding:20px;
-  border-radius:15px;
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:20px;
+  padding:30px;
+  width:100%;
   max-width:600px;
-  margin:auto;
 }
 
-input, button {
-  padding:10px;
-  margin:5px;
+h1 {
+  font-family:'Syne';
+  font-weight:800;
+  margin-bottom:20px;
+}
+
+input {
+  width:100%;
+  padding:12px;
+  margin-bottom:10px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.1);
+  background:#111;
+  color:#fff;
 }
 
 button {
-  background:#4f8ef7;
+  padding:12px;
   border:none;
+  border-radius:10px;
+  background:linear-gradient(135deg,#4f8ef7,#7b5ea7);
   color:#fff;
   cursor:pointer;
+  font-weight:700;
 }
 
-table {
-  width:100%;
+button:hover {
+  opacity:0.9;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.table {
   margin-top:20px;
+  width:100%;
 }
 
-td {
-  padding:8px;
+.table tr {
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
+
+.table td {
+  padding:10px;
+  font-size:14px;
+}
+
+.actions button {
+  margin-right:5px;
+  padding:6px 10px;
+  font-size:12px;
 }
 </style>
 </head>
@@ -48,27 +91,28 @@ td {
 
 <div class="card">
 
-<h2>Painel Admin</h2>
-
+<!-- LOGIN -->
 <div id="login">
+<h1>Admin Login</h1>
+
 <input id="admin-user" placeholder="Usuário">
 <input id="admin-pass" type="password" placeholder="Senha">
+
 <button onclick="loginAdmin()">Entrar</button>
 </div>
 
-<div id="painel" style="display:none;">
+<!-- PAINEL -->
+<div id="painel" style="display:none">
 
-<button onclick="gerarUsuario()">Gerar Acesso</button>
+<h1>Painel</h1>
 
-<table border="1">
-<thead>
-<tr>
-<th>Usuário</th>
-<th>IP</th>
-<th>Ações</th>
-</tr>
-</thead>
+<div class="grid">
+<button onclick="gerar(1)">1 DIA</button>
+<button onclick="gerar(7)">7 DIAS</button>
+<button onclick="gerar(30)">30 DIAS</button>
+</div>
 
+<table class="table">
 <tbody id="lista"></tbody>
 </table>
 
@@ -77,14 +121,14 @@ td {
 </div>
 
 <script>
-let adminToken = null;
 
-// LOGIN ADMIN
-async function loginAdmin() {
+let token = null;
+
+async function loginAdmin(){
   const username = document.getElementById('admin-user').value;
   const password = document.getElementById('admin-pass').value;
 
-  const res = await fetch('/api/admin/login', {
+  const res = await fetch('/api/admin/login',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({username,password})
@@ -93,61 +137,55 @@ async function loginAdmin() {
   const data = await res.json();
 
   if(data.sucesso){
-    adminToken = data.token;
+    token = data.token;
     document.getElementById('login').style.display='none';
     document.getElementById('painel').style.display='block';
-    carregarUsuarios();
+    carregar();
   } else {
-    alert("Erro no login");
+    alert("Erro login");
   }
 }
 
-// GERAR USUÁRIO
-async function gerarUsuario() {
-  const tempo = prompt("Tempo em minutos:");
+async function gerar(dias){
 
-  if(!tempo) return;
+  const tempo = dias * 1440; // minutos
 
-  const res = await fetch('/api/admin/gerar', {
+  const res = await fetch('/api/admin/gerar',{
     method:'POST',
     headers:{
       'Content-Type':'application/json',
-      'x-admin-token': adminToken
+      'x-admin-token': token
     },
-    body: JSON.stringify({ tempo: parseInt(tempo) })
+    body: JSON.stringify({tempo})
   });
 
   const data = await res.json();
 
-  alert(
-`ACESSO GERADO
+  alert(`LOGIN CRIADO
 
-Usuário: ${data.usuario}
+User: ${data.usuario}
 Senha: ${data.senha}
+Validade: ${dias} dias`);
 
-Tempo: ${tempo} minutos`
-  );
-
-  carregarUsuarios();
+  carregar();
 }
 
-// LISTAR
-async function carregarUsuarios(){
-  const res = await fetch('/api/admin/usuarios', {
-    headers:{'x-admin-token':adminToken}
+async function carregar(){
+  const res = await fetch('/api/admin/usuarios',{
+    headers:{'x-admin-token':token}
   });
 
   const lista = await res.json();
-  const tabela = document.getElementById('lista');
 
-  tabela.innerHTML = "";
+  const el = document.getElementById('lista');
+  el.innerHTML = '';
 
   lista.forEach(u=>{
-    tabela.innerHTML += `
+    el.innerHTML += `
       <tr>
         <td>${u.username}</td>
         <td>${u.ip || '-'}</td>
-        <td>
+        <td class="actions">
           <button onclick="resetar(${u.id})">Reset</button>
           <button onclick="deletar(${u.id})">Excluir</button>
         </td>
@@ -156,27 +194,24 @@ async function carregarUsuarios(){
   });
 }
 
-// RESET
 async function resetar(id){
   await fetch('/api/admin/reset/'+id,{
     method:'POST',
-    headers:{'x-admin-token':adminToken}
+    headers:{'x-admin-token':token}
   });
 
-  alert("Resetado");
-  carregarUsuarios();
+  carregar();
 }
 
-// DELETE
 async function deletar(id){
   await fetch('/api/admin/delete/'+id,{
     method:'DELETE',
-    headers:{'x-admin-token':adminToken}
+    headers:{'x-admin-token':token}
   });
 
-  alert("Deletado");
-  carregarUsuarios();
+  carregar();
 }
+
 </script>
 
 </body>
