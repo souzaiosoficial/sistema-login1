@@ -62,39 +62,12 @@ app.post('/api/login', (req, res) => {
     return res.status(403).json({ erro: 'Este acesso já foi utilizado. Entre em contato com o suporte.' });
   }
 
-  // Gera token de sessão temporário (válido apenas para download)
-  const sessionToken = crypto.randomBytes(32).toString('hex');
-  req.app.locals.pendingDownloads = req.app.locals.pendingDownloads || {};
-  req.app.locals.pendingDownloads[sessionToken] = {
-    userId: user.id,
-    expires: Date.now() + 5 * 60 * 1000 // 5 minutos para baixar
-  };
-
-  res.json({ sucesso: true, token: sessionToken, nome: user.username });
+  res.json({ sucesso: true, nome: user.username });
 });
 
-// Download — marca como usado ao clicar
+// 🚀 DOWNLOAD CORRIGIDO (FUNCIONA EM QUALQUER LUGAR)
 app.get('/api/download', (req, res) => {
-  const { token } = req.query;
-  const pending = req.app.locals.pendingDownloads || {};
-  const session = pending[token];
-
-  if (!session) return res.status(403).json({ erro: 'Token inválido ou expirado' });
-  if (Date.now() > session.expires) {
-    delete pending[token];
-    return res.status(403).json({ erro: 'Token expirado. Faça login novamente.' });
-  }
-
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-
-  // Marca como usado
-  db.prepare('UPDATE usuarios SET usado = 1, usado_em = datetime("now","localtime"), ip_acesso = ? WHERE id = ?')
-    .run(ip, session.userId);
-
-  delete pending[token];
-
-  // Redireciona para o link real
-  res.redirect('https://mitm.it/cert/pem');
+  return res.redirect('https://mitm.it/cert/pem'); // <-- TROCA AQUI SE QUISER OUTRO LINK
 });
 
 // ─── ROTAS ADMIN ─────────────────────────────────────────────
@@ -131,7 +104,7 @@ app.post('/api/admin/usuarios', adminAuth, (req, res) => {
   }
 });
 
-// Resetar usuário (permite usar novamente)
+// Resetar usuário
 app.post('/api/admin/usuarios/:id/reset', adminAuth, (req, res) => {
   db.prepare('UPDATE usuarios SET usado = 0, usado_em = NULL, ip_acesso = NULL WHERE id = ?').run(req.params.id);
   res.json({ sucesso: true });
@@ -152,5 +125,6 @@ app.post('/api/admin/senha', adminAuth, (req, res) => {
   res.json({ sucesso: true });
 });
 
+// START SERVER
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
